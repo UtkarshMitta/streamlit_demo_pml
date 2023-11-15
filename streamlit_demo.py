@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
 import torch.distributions as D
-from matplotlib.animation import FuncAnimation
 
 # Your Metropolis Hastings function
 # Your Metropolis Hastings function
@@ -79,9 +78,11 @@ def main():
             for i in range(0, len(samples_np), int(len(samples_np)/10)):
                 color = i / len(samples_np)  # Color changes with iteration
                 sns.kdeplot(samples_np[:i+int(len(samples_np)/10)], fill=True, color=plt.cm.plasma(color, alpha=0.5))  # KDE plot with colormap
-            ax.scatter(samples_np, np.zeros_like(samples_np), color=plt.cm.plasma(color))  # Scatter plot of samples with colormap
+            ax.scatter(samples_np, np.zeros_like(samples_np), color=plt.cm.plasma(color),label='Samples')  # Scatter plot of samples with colormap
             ax.set_title("1D Random Walk")
-            fig.colorbar(plt.cm.ScalarMappable(cmap='plasma',norm=plt.Normalize(0, len(samples_np))), ax=ax)
+            cbar=fig.colorbar(plt.cm.ScalarMappable(cmap='plasma',norm=plt.Normalize(0, len(samples_np))), ax=ax)
+            cbar.set_label('Iteration')
+            ax.set_xlabel('x')
             ax.legend()
             st.pyplot(fig)
         else:
@@ -90,12 +91,13 @@ def main():
             # Plotting the current sample and the KDE of all samples up to the current iteration
             fig, ax = plt.subplots()
             color = 'red' if i > 0 and samples[i] == samples[i-1] else 'green'  # Update color based on acceptance
-            ax.scatter(samples[:i+1].numpy(), np.zeros_like(samples[:i+1].numpy()), color=color)  # Scatter plot of current sample
+            ax.scatter(samples[:i+1].numpy(), np.zeros_like(samples[:i+1].numpy()), color=color,label='samples')  # Scatter plot of current sample
             sns.kdeplot(samples[:i+1].numpy(), fill=True, color='blue', alpha=0.5, ax=ax)  # KDE plot of all samples up to current iteration
             x=np.linspace(-5, 5, 100)
             y=dist.log_prob(torch.tensor(x)).exp().numpy()
             ax.plot(x, y, color='green', label='True Distribution', linewidth=3)
             ax.set_title("1D Random Walk")
+            ax.set_xlabel('x')
             ax.legend()
             st.pyplot(fig)
 
@@ -141,7 +143,8 @@ def main():
                 #sns.kdeplot(x=samples_np[:i+20, 0], y=samples_np[:i+20, 1], fill=True, color=plt.cm.cool(color, alpha=0.5), ax=ax1)  # KDE plot with colormap
                 sns.kdeplot(x=samples_np[:i+int(len(samples_np)/10), 0], fill=True, color=plt.cm.plasma(color, alpha=0.5), ax=ax2)  # Marginal KDE plot for x
                 sns.kdeplot(x=samples_np[:i+int(len(samples_np)/10), 1], fill=True, color=plt.cm.plasma(color, alpha=0.5), ax=ax3, vertical=True)  # Marginal KDE plot for y
-            ax1.scatter(samples_np[:, 0], samples_np[:, 1], color=plt.cm.plasma(color))  # Scatter plot of samples with colormap
+            ax1.scatter(samples_np[:, 0], samples_np[:, 1], color=plt.cm.plasma(color),label='Samples')  # Scatter plot of samples with colormap
+            fig.subplots_adjust(hspace=0.5)
             x=np.linspace(-5, 5, 100)
             y=np.linspace(-5, 5, 100)
             X, Y = np.meshgrid(x, y)
@@ -150,7 +153,9 @@ def main():
             pos[:, :, 1] = Y
             ax1.contour(X, Y, dist.log_prob(torch.tensor(pos)).exp().numpy(), cmap='cool')
             ax1.set_title("2D Random Walk")
-            fig.colorbar(plt.cm.ScalarMappable(cmap='plasma',norm=plt.Normalize(0, len(samples_np))), ax=[ax1, ax2, ax3])
+            ax1.set_xlabel('x')
+            cbar=fig.colorbar(plt.cm.ScalarMappable(cmap='plasma',norm=plt.Normalize(0, len(samples_np))), ax=[ax1, ax2, ax3])
+            cbar.set_label('Iteration')
             st.pyplot(fig)
         else:
             i = st.slider('Step', min_value=0, max_value=len(samples)-1, value=0)
@@ -162,8 +167,9 @@ def main():
             ax2 = fig.add_subplot(gs[0, 0:3])
             ax3 = fig.add_subplot(gs[1:4, 3])
             ax1.scatter(samples[:i+1][:,0],samples[:i+1][:,1])  # Scatter plot of current sample
-            sns.kdeplot(x=samples[:i+1,0], fill=True, color='blue', alpha=0.5, ax=ax2)  # KDE plot of all samples up to current iteration
+            sns.kdeplot(x=samples[:i+1,0], fill=True, color='blue', alpha=0.5, ax=ax2,label='Samples')  # KDE plot of all samples up to current iteration
             sns.kdeplot(x=samples[:i+1,1], fill=True, color='blue', alpha=0.5, ax=ax3, vertical=True)  # KDE plot of all samples up to current iteration
+            fig.subplots_adjust(hspace=0.5)
             x=np.linspace(-5, 5, 100)
             y=np.linspace(-5, 5, 100)
             X, Y = np.meshgrid(x, y)
@@ -172,6 +178,7 @@ def main():
             pos[:, :, 1] = Y
             ax1.contour(X, Y, dist.log_prob(torch.tensor(pos)).exp().numpy(), cmap='cool')
             ax1.set_title("2D Random Walk")
+            ax1.set_xlabel('x')
             st.pyplot(fig)
 
 if __name__ == "__main__":
